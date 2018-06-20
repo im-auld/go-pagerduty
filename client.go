@@ -15,14 +15,70 @@ const (
 	apiEndpoint = "https://api.pagerduty.com"
 )
 
+type APIResourceType string
+
+const (
+	AbilityResourceType           APIResourceType = "ability"
+	AddonResourceType             APIResourceType = "addon"
+	EscalationPolicyResourceType  APIResourceType = "escalation_policy"
+	EventResourceType             APIResourceType = "event"
+	IncidentResourceType          APIResourceType = "incident"
+	LogEntryResourceType          APIResourceType = "log_entry"
+	MaintenanceWindowResourceType APIResourceType = "maintenance_window"
+	NotificationResourceType      APIResourceType = "notification"
+	OnCallResourceType            APIResourceType = "on_call"
+	ResponsePLayResourceType      APIResourceType = "response_play"
+	ScheduleResourceType          APIResourceType = "schedule"
+	ServiceResourceType           APIResourceType = "service"
+	TeamResourceType              APIResourceType = "team"
+	UserResourceType              APIResourceType = "user"
+	VendorResourceType            APIResourceType = "vendor"
+	WebhookResourceType           APIResourceType = "webhook"
+)
+
+type Resource interface {
+	GetID() string
+	GetType() APIResourceType
+	GetSummary() string
+	GetSelf() string
+	GetHTMLURL() string
+}
+
+type ResourceList interface {
+	GetLimit() uint
+	GetOffset() uint
+	GetMore() bool
+	GetTotal() uint
+}
+
 // APIObject represents generic api json response that is shared by most
 // domain object (like escalation
 type APIObject struct {
-	ID      string `json:"id,omitempty"`
-	Type    string `json:"type,omitempty"`
-	Summary string `json:"summary,omitempty"`
-	Self    string `json:"self,omitempty"`
-	HTMLURL string `json:"html_url,omitempty"`
+	ID      string          `json:"id,omitempty"`
+	Type    APIResourceType `json:"type,omitempty"`
+	Summary string          `json:"summary,omitempty"`
+	Self    string          `json:"self,omitempty"`
+	HTMLURL string          `json:"html_url,omitempty"`
+}
+
+func (apiObj APIObject) GetID() string {
+	return apiObj.ID
+}
+
+func (apiObj APIObject) GetType() APIResourceType {
+	return apiObj.Type
+}
+
+func (apiObj APIObject) GetSummary() string {
+	return apiObj.Summary
+}
+
+func (apiObj APIObject) GetSelf() string {
+	return apiObj.Self
+}
+
+func (apiObj APIObject) GetHTMLURL() string {
+	return apiObj.HTMLURL
 }
 
 // APIListObject are the fields used to control pagination when listing objects.
@@ -31,6 +87,22 @@ type APIListObject struct {
 	Offset uint `url:"offset,omitempty"`
 	More   bool `url:"more,omitempty"`
 	Total  uint `url:"total,omitempty"`
+}
+
+func (list APIListObject) GetLimit() uint {
+	return list.Limit
+}
+
+func (list APIListObject) GetOffset() uint {
+	return list.Offset
+}
+
+func (list APIListObject) GetMore() bool {
+	return list.More
+}
+
+func (list APIListObject) GetTotal() uint {
+	return list.Total
 }
 
 // APIReference are the fields required to reference another API object.
@@ -88,12 +160,24 @@ type Client struct {
 	HTTPClient HTTPClient
 }
 
+type NewClientOptionFunc func(*Client)
+
+func WithCustomClient(c HTTPClient) NewClientOptionFunc {
+	return func(client *Client) {
+		client.HTTPClient = c
+	}
+}
+
 // NewClient creates an API client
-func NewClient(authToken string) *Client {
-	return &Client{
+func NewClient(authToken string, opts ...NewClientOptionFunc) *Client {
+	c := &Client{
 		authToken:  authToken,
 		HTTPClient: defaultHTTPClient,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (c *Client) delete(path string) (*http.Response, error) {
