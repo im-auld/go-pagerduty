@@ -11,13 +11,12 @@ import (
 	"time"
 )
 
-const (
-	apiEndpoint = "https://api.pagerduty.com"
-)
-
 type APIResourceType string
 
 const (
+	apiEndpoint = "https://api.pagerduty.com"
+
+	// Resource Types
 	AbilityResourceType           APIResourceType = "ability"
 	AddonResourceType             APIResourceType = "addon"
 	EscalationPolicyResourceType  APIResourceType = "escalation_policy"
@@ -111,7 +110,7 @@ type APIReference struct {
 	Type string `json:"type,omitempty"`
 }
 
-type errorObject struct {
+type ErrorObject struct {
 	Code    int         `json:"code,omitempty"`
 	Message string      `json:"message,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
@@ -180,8 +179,13 @@ func NewClient(authToken string, opts ...NewClientOptionFunc) *Client {
 	return c
 }
 
+func (c *Client) setDefaultHeaders(req *http.Request) {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Token token="+c.authToken)
+}
+
 func (c *Client) delete(path string) (*http.Response, error) {
-	return c.do("DELETE", path, nil, nil)
+	return c.do(http.MethodDelete, path, nil, nil)
 }
 
 func (c *Client) put(path string, payload interface{}, headers *map[string]string) (*http.Response, error) {
@@ -191,9 +195,9 @@ func (c *Client) put(path string, payload interface{}, headers *map[string]strin
 		if err != nil {
 			return nil, err
 		}
-		return c.do("PUT", path, bytes.NewBuffer(data), headers)
+		return c.do(http.MethodPut, path, bytes.NewBuffer(data), headers)
 	}
-	return c.do("PUT", path, nil, headers)
+	return c.do(http.MethodPut, path, nil, headers)
 }
 
 func (c *Client) post(path string, payload interface{}) (*http.Response, error) {
@@ -201,11 +205,11 @@ func (c *Client) post(path string, payload interface{}) (*http.Response, error) 
 	if err != nil {
 		return nil, err
 	}
-	return c.do("POST", path, bytes.NewBuffer(data), nil)
+	return c.do(http.MethodPost, path, bytes.NewBuffer(data), nil)
 }
 
 func (c *Client) get(path string) (*http.Response, error) {
-	return c.do("GET", path, nil, nil)
+	return c.do(http.MethodGet, path, nil, nil)
 }
 
 func (c *Client) do(method, path string, body io.Reader, headers *map[string]string) (*http.Response, error) {
@@ -217,8 +221,7 @@ func (c *Client) do(method, path string, body io.Reader, headers *map[string]str
 			req.Header.Set(k, v)
 		}
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Token token="+c.authToken)
+	c.setDefaultHeaders(req)
 
 	resp, err := c.HTTPClient.Do(req)
 	return c.checkResponse(resp, err)
@@ -232,23 +235,23 @@ func (c *Client) decodeJSON(resp *http.Response, payload interface{}) error {
 
 func (c *Client) checkResponse(resp *http.Response, err error) (*http.Response, error) {
 	if err != nil {
-		return resp, fmt.Errorf("Error calling the API endpoint: %v", err)
+		return resp, fmt.Errorf("error calling the API endpoint: %v", err)
 	}
-	if 199 >= resp.StatusCode || 300 <= resp.StatusCode {
-		var eo *errorObject
+	if resp.StatusCode <= 199  || resp.StatusCode >= http.StatusMultipleChoices {
+		var eo *ErrorObject
 		var getErr error
 		if eo, getErr = c.getErrorFromResponse(resp); getErr != nil {
-			return resp, fmt.Errorf("Response did not contain formatted error: %s. HTTP response code: %v. Raw response: %+v", getErr, resp.StatusCode, resp)
+			return resp, fmt.Errorf("response did not contain formatted error: %s. HTTP response code: %v. Raw response: %+v", getErr, resp.StatusCode, resp)
 		}
-		return resp, fmt.Errorf("Failed call API endpoint. HTTP response code: %v. Error: %v", resp.StatusCode, eo)
+		return resp, fmt.Errorf("failed call API endpoint. HTTP response code: %v. Error: %v", resp.StatusCode, eo)
 	}
 	return resp, nil
 }
 
-func (c *Client) getErrorFromResponse(resp *http.Response) (*errorObject, error) {
-	var result map[string]errorObject
+func (c *Client) getErrorFromResponse(resp *http.Response) (*ErrorObject, error) {
+	var result map[string]ErrorObject
 	if err := c.decodeJSON(resp, &result); err != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", err)
+		return nil, fmt.Errorf("could not decode JSON response: %v", err)
 	}
 	s, ok := result["error"]
 	if !ok {
