@@ -74,6 +74,20 @@ type Service struct {
 	AlertCreation          string               `json:"alert_creation,omitempty"`
 }
 
+type ServiceResponse struct {
+	APIResponse
+}
+
+func (r ServiceResponse) GetResource() (Resource, error) {
+	var tgt Service
+	err := r.getResourceFromResponse(&tgt)
+	return tgt, err
+}
+
+func NewServiceResponse(resp *http.Response) ServiceResponse {
+	return ServiceResponse{APIResponse{raw: resp, apiType: ServiceResourceType}}
+}
+
 // ListServiceOptions is the data structure used when calling the ListServices API endpoint.
 type ListServiceOptions struct {
 	APIListObject

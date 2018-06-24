@@ -3,6 +3,7 @@ package pagerduty
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 )
 
 // IncidentDetail contains a representation of the incident associated with the action that caused this webhook message.
@@ -34,4 +35,22 @@ func DecodeWebhook(r io.Reader) (*WebhookPayload, error) {
 		return nil, err
 	}
 	return &payload, nil
+}
+
+type Webhook struct {
+	APIObject
+}
+
+type WebhookResponse struct {
+	APIResponse
+}
+
+func (r WebhookResponse) GetResource() (Resource, error) {
+	var dest Webhook
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewWebhookResponse(resp *http.Response) WebhookResponse {
+	return WebhookResponse{APIResponse{raw: resp, apiType: WebhookResourceType}}
 }

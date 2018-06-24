@@ -14,6 +14,20 @@ type Addon struct {
 	Services []APIObject `json:"services,omitempty"`
 }
 
+type AddonResponse struct {
+	APIResponse
+}
+
+func (r AddonResponse) GetResource() (Resource, error) {
+	var dest Addon
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewAddonResponse(resp *http.Response) AddonResponse {
+	return AddonResponse{APIResponse{raw: resp, apiType: AddonResourceType}}
+}
+
 // ListAddonOptions are the options available when calling the ListAddons API endpoint.
 type ListAddonOptions struct {
 	APIListObject

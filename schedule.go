@@ -49,6 +49,20 @@ type Schedule struct {
 	FinalSchedule       ScheduleLayer   `json:"final_schedule,omitempty"`
 }
 
+type ScheduleResponse struct {
+	APIResponse
+}
+
+func (r ScheduleResponse) GetResource() (Resource, error) {
+	var dest Schedule
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewScheduleResponse(resp *http.Response) ScheduleResponse {
+	return ScheduleResponse{APIResponse{raw: resp, apiType: ScheduleResourceType}}
+}
+
 // ListSchedulesOptions is the data structure used when calling the ListSchedules API endpoint.
 type ListSchedulesOptions struct {
 	APIListObject

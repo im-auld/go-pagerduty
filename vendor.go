@@ -21,6 +21,20 @@ type Vendor struct {
 	IntegrationGuideURL string `json:"integration_guide_url,omitempty"`
 }
 
+type VendorResponse struct {
+	APIResponse
+}
+
+func (r VendorResponse) GetResource() (Resource, error) {
+	var dest Vendor
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewVendorResponse(resp *http.Response) VendorResponse {
+	return VendorResponse{APIResponse{raw: resp, apiType: VendorResourceType}}
+}
+
 // ListVendorResponse is the data structure returned from calling the ListVendors API endpoint.
 type ListVendorResponse struct {
 	APIListObject

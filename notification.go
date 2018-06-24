@@ -2,6 +2,7 @@ package pagerduty
 
 import (
 	"github.com/google/go-querystring/query"
+	"net/http"
 )
 
 // Notification is a message containing the details of the incident.
@@ -11,6 +12,40 @@ type Notification struct {
 	StartedAt string `json:"started_at"`
 	Address   string
 	User      APIObject
+}
+
+func (n Notification) GetID() string {
+	return n.ID
+}
+
+func (n Notification) GetType() APIResourceType {
+	return NotificationResourceType
+}
+
+func (n Notification) GetSummary() string {
+	return n.ID
+}
+
+func (n Notification) GetSelf() string {
+	return ""
+}
+
+func (n Notification) GetHTMLURL() string {
+	return ""
+}
+
+type NotificationResponse struct {
+	APIResponse
+}
+
+func (r NotificationResponse) GetResource() (Resource, error) {
+	var dest Notification
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewNotificationResponse(resp *http.Response) NotificationResponse {
+	return NotificationResponse{APIResponse{raw: resp, apiType: NotificationResourceType}}
 }
 
 // ListNotificationOptions is the data structure used when calling the ListNotifications API endpoint.

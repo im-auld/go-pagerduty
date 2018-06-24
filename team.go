@@ -13,6 +13,20 @@ type Team struct {
 	Description string `json:"description,omitempty"`
 }
 
+type TeamResponse struct {
+	APIResponse
+}
+
+func (r TeamResponse) GetResource() (Resource, error) {
+	var dest Team
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewTeamResponse(resp *http.Response) TeamResponse {
+	return TeamResponse{APIResponse{raw: resp, apiType: TeamResourceType}}
+}
+
 // ListTeamResponse is the structure used when calling the ListTeams API endpoint.
 type ListTeamResponse struct {
 	APIListObject

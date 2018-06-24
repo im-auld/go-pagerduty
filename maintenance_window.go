@@ -18,6 +18,20 @@ type MaintenanceWindow struct {
 	CreatedBy      APIListObject   `json:"created_by"`
 }
 
+type MaintenanceWindowResponse struct {
+	APIResponse
+}
+
+func (r MaintenanceWindowResponse) GetResource() (Resource, error) {
+	var dest MaintenanceWindow
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewMaintenanceWindowResponse(resp *http.Response) MaintenanceWindowResponse {
+	return MaintenanceWindowResponse{APIResponse{raw: resp, apiType: MaintenanceWindowResourceType}}
+}
+
 // ListMaintenanceWindowsResponse is the data structur returned from calling the ListMaintenanceWindows API endpoint.
 type ListMaintenanceWindowsResponse struct {
 	APIListObject

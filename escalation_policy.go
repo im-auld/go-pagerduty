@@ -30,6 +30,20 @@ type EscalationPolicy struct {
 	RepeatEnabled   bool             `json:"repeat_enabled,omitempty"`
 }
 
+type EscalationPolicyResponse struct {
+	APIResponse
+}
+
+func (r EscalationPolicyResponse) GetResource() (Resource, error) {
+	var dest EscalationPolicy
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewEscalationPolicyResponse(resp *http.Response) EscalationPolicyResponse {
+	return EscalationPolicyResponse{APIResponse{raw: resp, apiType: EscalationPolicyResourceType}}
+}
+
 // ListEscalationPoliciesResponse is the data structure returned from calling the ListEscalationPolicies API endpoint.
 type ListEscalationPoliciesResponse struct {
 	APIListObject

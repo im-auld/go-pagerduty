@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-querystring/query"
+	"net/http"
 )
 
 // Agent is the actor who carried out the action.
@@ -34,6 +35,20 @@ type LogEntry struct {
 	Contexts               []Context
 	AcknowledgementTimeout int `json:"acknowledgement_timeout"`
 	EventDetails           map[string]string
+}
+
+type LogEntryResponse struct {
+	APIResponse
+}
+
+func (r LogEntryResponse) GetResource() (Resource, error) {
+	var dest LogEntry
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewLogEntryResponse(resp *http.Response) LogEntryResponse {
+	return LogEntryResponse{APIResponse{raw: resp, apiType: LogEntryResourceType}}
 }
 
 // ListLogEntryResponse is the response data when calling the ListLogEntry API endpoint.

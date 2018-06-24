@@ -42,6 +42,20 @@ type User struct {
 	Teams             []Team
 }
 
+type UserResponse struct {
+	APIResponse
+}
+
+func (r UserResponse) GetResource() (Resource, error) {
+	var dest User
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewUserResponse(resp *http.Response) UserResponse {
+	return UserResponse{APIResponse{raw: resp, apiType: UserResourceType}}
+}
+
 // ListUsersResponse is the data structure returned from calling the ListUsers API endpoint.
 type ListUsersResponse struct {
 	APIListObject

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-querystring/query"
+	"net/http"
 )
 
 // Acknowledgement is the data structure of an acknoledgement of an incident.
@@ -41,6 +42,20 @@ type Incident struct {
 	Teams                []APIObject       `json:"teams,omitempty"`
 	Urgency              string            `json:"urgency,omitempty"`
 	Status               string            `json:"status,omitempty"`
+}
+
+type IncidentResponse struct {
+	APIResponse
+}
+
+func (r IncidentResponse) GetResource() (Resource, error) {
+	var dest Incident
+	err := r.getResourceFromResponse(&dest)
+	return dest, err
+}
+
+func NewIncidentResponse(resp *http.Response) IncidentResponse {
+	return IncidentResponse{APIResponse{raw: resp, apiType: IncidentResourceType}}
 }
 
 // ListIncidentsResponse is the response structure when calling the ListIncident API endpoint.
