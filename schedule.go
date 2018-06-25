@@ -87,7 +87,7 @@ func (c *Client) ListSchedules(opts ...ResourceRequestOptionFunc) (*ListSchedule
 		return nil, err
 	}
 	var result ListSchedulesResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // CreateSchedule creates a new on-call schedule.
@@ -189,7 +189,7 @@ func (c *Client) ListOverrides(id string, o ListOverridesOptions) ([]Override, e
 		return nil, err
 	}
 	var result map[string][]Override
-	if err := c.decodeJSON(resp, &result); err != nil {
+	if err := deserialize(resp, &result); err != nil {
 		return nil, err
 	}
 	overrides, ok := result["overrides"]
@@ -234,7 +234,7 @@ func (c *Client) ListOnCallUsers(id string, o ListOnCallUsersOptions) ([]User, e
 		return nil, err
 	}
 	var result map[string][]User
-	if err := c.decodeJSON(resp, &result); err != nil {
+	if err := deserialize(resp, &result); err != nil {
 		return nil, err
 	}
 	u, ok := result["users"]
@@ -246,7 +246,7 @@ func (c *Client) ListOnCallUsers(id string, o ListOnCallUsersOptions) ([]User, e
 
 func getScheduleFromResponse(c *Client, resp *http.Response) (*Schedule, error) {
 	var target map[string]Schedule
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "schedule"
@@ -259,7 +259,7 @@ func getScheduleFromResponse(c *Client, resp *http.Response) (*Schedule, error) 
 
 func getOverrideFromResponse(c *Client, resp *http.Response) (*Override, error) {
 	var target map[string]Override
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "override"

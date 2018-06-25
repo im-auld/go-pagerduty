@@ -70,5 +70,5 @@ func (c *Client) ListNotifications(opts ...ResourceRequestOptionFunc) (*ListNoti
 		return nil, err
 	}
 	var result ListNotificationsResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }

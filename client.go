@@ -57,8 +57,9 @@ type Client struct {
 }
 
 // DeleteResource deletes the given Resource. The given Resource should return a valid API URL from GetSelf()
-func (c *Client) DeleteResource(resource Resource) error {
-	res, err := c.delete(resource.GetSelf())
+func (c *Client) DeleteResource(typ APIResourceType, id string) error {
+	path := fmt.Sprintf("/%s/%s",typ.Plural(), id)
+	res, err := c.delete(path)
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func (c *Client) DeleteResource(resource Resource) error {
 		if err != nil {
 			return err
 		}
-		return errors.Errorf("received non-OK response %d: %s", res.StatusCode, body)
+		return errors.Errorf("received non-success response %d: %s", res.StatusCode, body)
 	}
 	return nil
 }
@@ -107,9 +108,20 @@ func (c *Client) ListResources(typ APIResourceType, opts ...ResourceRequestOptio
 	if err != nil {
 		return nil, err
 	}
-
-	//apiResp, err := APIListResponses.Get(typ, res)
 	return res, nil
+}
+
+func (c *Client) UpdateResource(resource Resource) (Resource, error) {
+	path := fmt.Sprintf("/%s/%s", resource.GetType().Plural(), resource.GetID())
+	res, err := c.put(path, map[APIResourceType]Resource{resource.GetType(): resource})
+	if err != nil {
+		return nil, err
+	}
+	apiRes, err := APIResponses.Get(resource.GetType(), res)
+	if err != nil {
+		return nil, err
+	}
+	return apiRes.GetResource()
 }
 
 func (c *Client) setDefaultHeaders(req *http.Request) {
@@ -117,37 +129,13 @@ func (c *Client) setDefaultHeaders(req *http.Request) {
 	req.Header.Set("Authorization", "Token token="+c.authToken)
 }
 
-func (c *Client) delete(path string) (*http.Response, error) {
-	return c.do(http.MethodDelete, path, nil, nil)
-}
-
-func (c *Client) put(path string, payload interface{}, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
-	if payload != nil {
-		data, err := json.Marshal(payload)
-		if err != nil {
-			return nil, err
-		}
-		return c.do(http.MethodPut, path, bytes.NewBuffer(data), opts...)
-	}
-	return c.do(http.MethodPut, path, nil, opts...)
-}
-
-func (c *Client) post(path string, payload interface{}, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
-	data, err := json.Marshal(payload)
+func (c *Client) do(method, path string, body io.Reader, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
+	endpoint := c.apiEndpoint + path
+	req, err := http.NewRequest(method, endpoint, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.do(http.MethodPost, path, bytes.NewBuffer(data), nil)
-}
-
-func (c *Client) get(path string, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
-	return c.do(http.MethodGet, path, nil, opts...)
-}
-
-func (c *Client) do(method, path string, body io.Reader, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
-	endpoint := c.apiEndpoint + path
-	req, _ := http.NewRequest(method, endpoint, body)
-	req.Header.Set("Accept", "application/vnd.pagerduty+json;version=2")
+	req.Header.Set("Accept", pagerdutyAcceptHeader)
 	for _, opt := range opts {
 		err := opt(req)
 		if err != nil {
@@ -160,10 +148,28 @@ func (c *Client) do(method, path string, body io.Reader, opts ...ResourceRequest
 	return c.checkResponse(resp, err)
 }
 
-func (c *Client) decodeJSON(resp *http.Response, payload interface{}) error {
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	return decoder.Decode(payload)
+func (c *Client) put(path string, payload interface{}, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
+	return c.write(http.MethodPut, path, payload, opts...)
+}
+
+func (c *Client) post(path string, payload interface{}, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
+	return c.write(http.MethodPost, path, payload, opts...)
+}
+
+func (c *Client) write(method, path string, payload interface{}, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
+	data, err := serialize(payload)
+	if err != nil {
+		return nil, err
+	}
+	return c.do(method, path, data, opts...)
+}
+
+func (c *Client) delete(path string) (*http.Response, error) {
+	return c.do(http.MethodDelete, path, nil)
+}
+
+func (c *Client) get(path string, opts ...ResourceRequestOptionFunc) (*http.Response, error) {
+	return c.do(http.MethodGet, path, nil, opts...)
 }
 
 func (c *Client) checkResponse(resp *http.Response, err error) (*http.Response, error) {
@@ -171,26 +177,19 @@ func (c *Client) checkResponse(resp *http.Response, err error) (*http.Response, 
 		return resp, fmt.Errorf("error calling the API endpoint: %v", err)
 	}
 	if resp.StatusCode <= 199 || resp.StatusCode >= http.StatusMultipleChoices {
-		var eo *ErrorObject
-		var getErr error
-		if eo, getErr = c.getErrorFromResponse(resp); getErr != nil {
-			return resp, fmt.Errorf("response did not contain formatted error: %s. HTTP response code: %v. Raw response: %+v", getErr, resp.StatusCode, resp)
-		}
-		return resp, fmt.Errorf("failed call API endpoint. HTTP response code: %v. Error: %v", resp.StatusCode, eo)
+		err = c.getErrorFromResponse(resp)
+		return resp, fmt.Errorf("non-success HTTP response %v: %s", resp.StatusCode, err.Error())
 	}
 	return resp, nil
 }
 
-func (c *Client) getErrorFromResponse(resp *http.Response) (*ErrorObject, error) {
-	var result map[string]ErrorObject
-	if err := c.decodeJSON(resp, &result); err != nil {
-		return nil, fmt.Errorf("could not decode JSON response: %v", err)
+func (c *Client) getErrorFromResponse(resp *http.Response) error {
+	var result ErrorResponse
+	err := deserialize(resp, &result)
+	if err != nil {
+		return err
 	}
-	s, ok := result["error"]
-	if !ok {
-		return nil, fmt.Errorf("JSON response does not have error field")
-	}
-	return &s, nil
+	return &result.Error
 }
 
 type NewClientOptionFunc func(*Client)
@@ -218,4 +217,26 @@ func NewClient(authToken string, opts ...NewClientOptionFunc) *Client {
 		opt(c)
 	}
 	return c
+}
+
+func serialize(payload interface{}) (*bytes.Buffer, error) {
+	if payload != nil {
+		data, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+		return bytes.NewBuffer(data), nil
+	}
+	return nil, nil
+}
+
+func deserialize(resp *http.Response, dest interface{}) error {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(body, &dest); err != nil {
+		return fmt.Errorf("could not decode JSON response: %v", err)
+	}
+	return nil
 }

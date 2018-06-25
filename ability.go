@@ -76,7 +76,7 @@ func (c *Client) ListAbilities() (*ListAbilityResponse, error) {
 		return nil, err
 	}
 	var result ListAbilityResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // TestAbility Check if your account has the given ability.

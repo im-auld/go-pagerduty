@@ -52,7 +52,7 @@ func (c *Client) ListVendors(opts ...ResourceRequestOptionFunc) (*ListVendorResp
 		return nil, err
 	}
 	var result ListVendorResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // GetVendor gets details about an existing vendor.

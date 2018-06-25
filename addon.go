@@ -48,7 +48,7 @@ func (c *Client) ListAddons(opts ...ResourceRequestOptionFunc) (*ListAddonRespon
 		return nil, err
 	}
 	var result ListAddonResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // GetAddon gets details about an existing add-on.
@@ -78,7 +78,7 @@ func (c *Client) InstallAddon(a Addon) (*Addon, error) {
 
 func getAddonFromResponse(c *Client, resp *http.Response) (*Addon, error) {
 	var result map[string]Addon
-	if err := c.decodeJSON(resp, &result); err != nil {
+	if err := deserialize(resp, &result); err != nil {
 		return nil, err
 	}
 	a, ok := result["addon"]

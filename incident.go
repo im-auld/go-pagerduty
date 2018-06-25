@@ -88,7 +88,7 @@ func (c *Client) ListIncidents(opts ...ResourceRequestOptionFunc) (*ListIncident
 		return nil, err
 	}
 	var result ListIncidentsResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // ManageIncidents acknowledges, resolves, escalates, or reassigns one or more incidents.
@@ -126,7 +126,7 @@ func (c *Client) ListIncidentNotes(id string) ([]IncidentNote, error) {
 		return nil, err
 	}
 	var result map[string][]IncidentNote
-	if err := c.decodeJSON(resp, &result); err != nil {
+	if err := deserialize(resp, &result); err != nil {
 		return nil, err
 	}
 	notes, ok := result["notes"]
@@ -177,5 +177,5 @@ func (c *Client) ListIncidentLogEntries(id string, o ListIncidentLogEntriesOptio
 		return nil, err
 	}
 	var result ListIncidentLogEntriesResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }

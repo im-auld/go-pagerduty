@@ -71,5 +71,5 @@ func (c *Client) ListLogEntries(opts ...ResourceRequestOptionFunc) (*ListLogEntr
 		return nil, err
 	}
 	var result ListLogEntryResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }

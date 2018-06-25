@@ -111,7 +111,7 @@ func (c *Client) ListServices(opts ...ResourceRequestOptionFunc) (*ListServiceRe
 		return nil, err
 	}
 	var result ListServiceResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // GetServiceOptions is the data structure used when calling the GetService API endpoint.
@@ -189,7 +189,7 @@ func getServiceFromResponse(c *Client, resp *http.Response, err error) (*Service
 		return nil, err
 	}
 	var target map[string]Service
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "service"
@@ -205,7 +205,7 @@ func getIntegrationFromResponse(c *Client, resp *http.Response, err error) (*Int
 		return nil, err
 	}
 	var target map[string]Integration
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", err)
 	}
 	rootNode := "integration"

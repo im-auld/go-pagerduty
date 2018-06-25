@@ -77,7 +77,7 @@ func (c *Client) ListEscalationPolicies(opts ...ResourceRequestOptionFunc) (*Lis
 		return nil, err
 	}
 	var result ListEscalationPoliciesResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // CreateEscalationPolicy creates a new escalation policy.
@@ -158,7 +158,7 @@ func (c *Client) ListEscalationRules(escID string) (*ListEscalationRulesResponse
 	}
 
 	var result ListEscalationRulesResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 func getEscalationRuleFromResponse(c *Client, resp *http.Response, err error) (*EscalationRule, error) {
@@ -167,7 +167,7 @@ func getEscalationRuleFromResponse(c *Client, resp *http.Response, err error) (*
 		return nil, err
 	}
 	var target map[string]EscalationRule
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "escalation_rule"
@@ -184,7 +184,7 @@ func getEscalationPolicyFromResponse(c *Client, resp *http.Response, err error) 
 		return nil, err
 	}
 	var target map[string]EscalationPolicy
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "escalation_policy"

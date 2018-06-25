@@ -2,6 +2,7 @@ package pagerduty
 
 const (
 	apiEndpoint = "https://api.pagerduty.com"
+	pagerdutyAcceptHeader = "application/vnd.pagerduty+json;version=2"
 
 	// Resource Types
 	AbilityResourceType           APIResourceType = "ability"
@@ -50,4 +51,41 @@ const (
 	AbilityIncidentPriorityActivated          Ability = "incident_priority_activated"
 	AbilityFeaturesInUsePreventingDowngradeTo Ability = "features_in_use_preventing_downgrade_to"
 	AbilityFeatureToPlanMap                   Ability = "feature_to_plan_map"
+
+	// Integration constants
+	AwsCloudwatchInboundIntegration                = "aws_cloudwatch_inbound_integration"
+	AwsCloudwatchInboundIntegrationReference       = "aws_cloudwatch_inbound_integration_reference"
+	CloudkickInboundIntegration                    = "cloudkick_inbound_integration"
+	CloudkickInboundIntegrationReference           = "cloudkick_inbound_integration_reference"
+	EventTransformerApiInboundIntegration          = "event_transformer_api_inbound_integration"
+	EventTransformerApiInboundIntegrationReference = "event_transformer_api_inbound_integration_reference"
+	GenericEmailInboundIntegration                 = "generic_email_inbound_integration"
+	GenericEmailInboundIntegrationReference        = "generic_email_inbound_integration_reference"
+	GenericEventsApiInboundIntegration             = "generic_events_api_inbound_integration"
+	GenericEventsApiInboundIntegrationReference    = "generic_events_api_inbound_integration_reference"
+	KeynoteInboundIntegration                      = "keynote_inbound_integration"
+	KeynoteInboundIntegrationReference             = "keynote_inbound_integration_reference"
+	NagiosInboundIntegration                       = "nagios_inbound_integration"
+	NagiosInboundIntegrationReference              = "nagios_inbound_integration_reference"
+	PingdomInboundIntegration                      = "pingdom_inbound_integration"
+	PingdomInboundIntegrationReference             = "pingdom_inbound_integration_reference"
+	SqlMonitorInboundIntegration                   = "sql_monitor_inbound_integration"
+	SqlMonitorInboundIntegrationReference          = "sql_monitor_inbound_integration_reference"
+
+	// Timezones
+	TZAmericaLos_Angeles = "America/Los_Angeles"
+	TZEuropeCopenhagen   = "Europe/Copenhagen"
+	TZEtcUTC             = "Etc/UTC"
+	TZAsiaShanghai       = "Asia/Shanghai"
+	TZEuropeHelsinki     = "Europe/Helsinki"
+	TZEuropeAmsterdam    = "Europe/Amsterdam"
+
+	// Service constants
+	svcStatusActive             = "active"
+	svcStatusWarning            = "warning"
+	svcStatusCritical           = "critical"
+	svcStatusMaintenance        = "maintenance"
+	svcStatusDisabled           = "disabled"
+	svcCreateIncidents          = "create_incidents"
+	svcCreateAlertsAndIncidents = "create_alerts_and_incidents"
 )

@@ -54,7 +54,7 @@ func (c *Client) ListMaintenanceWindows(opts ...ResourceRequestOptionFunc) (*Lis
 		return nil, err
 	}
 	var result ListMaintenanceWindowsResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // CreateMaintenanceWindows creates a new maintenance window for the specified services.
@@ -97,7 +97,7 @@ func getMaintenanceWindowFromResponse(c *Client, resp *http.Response, err error)
 		return nil, err
 	}
 	var target map[string]MaintenanceWindow
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "maintenance_window"

@@ -81,7 +81,7 @@ func (c *Client) ListUsers(opts ...ResourceRequestOptionFunc) (*ListUsersRespons
 		return nil, err
 	}
 	var result ListUsersResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // CreateUser creates a new user.
@@ -121,7 +121,7 @@ func getUserFromResponse(c *Client, resp *http.Response, err error) (*User, erro
 		return nil, err
 	}
 	var target map[string]User
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "user"

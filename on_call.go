@@ -44,5 +44,5 @@ func (c *Client) ListOnCalls(o ListOnCallOptions) (*ListOnCallsResponse, error) 
 		return nil, err
 	}
 	var result ListOnCallsResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }

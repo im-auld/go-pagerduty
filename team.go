@@ -45,7 +45,7 @@ func (c *Client) ListTeams(opts ...ResourceRequestOptionFunc) (*ListTeamResponse
 		return nil, err
 	}
 	var result ListTeamResponse
-	return &result, c.decodeJSON(resp, &result)
+	return &result, deserialize(resp, &result)
 }
 
 // CreateTeam creates a new team.
@@ -105,7 +105,7 @@ func getTeamFromResponse(c *Client, resp *http.Response, err error) (*Team, erro
 		return nil, err
 	}
 	var target map[string]Team
-	if dErr := c.decodeJSON(resp, &target); dErr != nil {
+	if dErr := deserialize(resp, &target); dErr != nil {
 		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
 	}
 	rootNode := "team"

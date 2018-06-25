@@ -201,8 +201,16 @@ type APIReference struct {
 	Type string `json:"type,omitempty"`
 }
 
+type ErrorResponse struct {
+	Error ErrorObject `json:"error,omitempty"`
+}
+
 type ErrorObject struct {
 	Code    int         `json:"code,omitempty"`
 	Message string      `json:"message,omitempty"`
 	Errors  interface{} `json:"errors,omitempty"`
+}
+
+func (eo ErrorObject) Error() string {
+	return fmt.Sprintf("API call failed with code %d: %s %v", eo.Code, eo.Message, eo.Errors)
 }
