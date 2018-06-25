@@ -54,3 +54,7 @@ func (r WebhookResponse) GetResource() (Resource, error) {
 func NewWebhookResponse(resp *http.Response) WebhookResponse {
 	return WebhookResponse{APIResponse{raw: resp, apiType: WebhookResourceType}}
 }
+
+type ListWebhooksResponse struct {
+	APIListObject
+}

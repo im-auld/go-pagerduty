@@ -71,12 +71,8 @@ type GetEscalationRuleOptions struct {
 }
 
 // ListEscalationPolicies lists all of the existing escalation policies.
-func (c *Client) ListEscalationPolicies(o ListEscalationPoliciesOptions) (*ListEscalationPoliciesResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get(escPath + "?" + v.Encode())
+func (c *Client) ListEscalationPolicies(opts ...ResourceRequestOptionFunc) (*ListEscalationPoliciesResponse, error) {
+	resp, err := c.ListResources(EscalationPolicyResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +100,13 @@ type GetEscalationPolicyOptions struct {
 }
 
 // GetEscalationPolicy gets information about an existing escalation policy and its rules.
-func (c *Client) GetEscalationPolicy(id string, o *GetEscalationPolicyOptions) (*EscalationPolicy, error) {
-	v, err := query.Values(o)
+func (c *Client) GetEscalationPolicy(id string, opts ...ResourceRequestOptionFunc) (*EscalationPolicy, error) {
+	res, err := c.GetResource(EscalationPolicyResourceType, id, opts...)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.get(escPath + "/" + id + "?" + v.Encode())
-	return getEscalationPolicyFromResponse(c, resp, err)
+	escPol := res.(EscalationPolicy)
+	return &escPol, nil
 }
 
 // UpdateEscalationPolicy updates an existing escalation policy and its rules.

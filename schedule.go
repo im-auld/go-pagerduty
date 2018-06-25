@@ -81,12 +81,8 @@ type UserReference struct {
 }
 
 // ListSchedules lists the on-call schedules.
-func (c *Client) ListSchedules(o ListSchedulesOptions) (*ListSchedulesResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/schedules?" + v.Encode())
+func (c *Client) ListSchedules(opts ...ResourceRequestOptionFunc) (*ListSchedulesResponse, error) {
+	resp, err := c.ListResources(ScheduleResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,16 +136,13 @@ type GetScheduleOptions struct {
 }
 
 // GetSchedule shows detailed information about a schedule, including entries for each layer and sub-schedule.
-func (c *Client) GetSchedule(id string, o GetScheduleOptions) (*Schedule, error) {
-	v, err := query.Values(o)
+func (c *Client) GetSchedule(id string, opts ...ResourceRequestOptionFunc) (*Schedule, error) {
+	res, err := c.GetResource(ScheduleResourceType, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse values for query: %v", err)
+	    return nil, err
 	}
-	resp, err := c.get("/schedules/" + id + "?" + v.Encode())
-	if err != nil {
-		return nil, err
-	}
-	return getScheduleFromResponse(c, resp)
+	obj := res.(Schedule)
+	return &obj, nil
 }
 
 // UpdateScheduleOptions is the data structure used when calling the UpdateSchedule API endpoint.

@@ -2,7 +2,6 @@ package pagerduty
 
 import (
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"net/http"
 )
 
@@ -40,13 +39,8 @@ type ListTeamOptions struct {
 }
 
 // ListTeams lists teams of your PagerDuty account, optionally filtered by a search query.
-func (c *Client) ListTeams(o ListTeamOptions) (*ListTeamResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.get("/teams?" + v.Encode())
+func (c *Client) ListTeams(opts ...ResourceRequestOptionFunc) (*ListTeamResponse, error) {
+	resp, err := c.ListResources(TeamResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +62,12 @@ func (c *Client) DeleteTeam(id string) error {
 
 // GetTeam gets details about an existing team.
 func (c *Client) GetTeam(id string) (*Team, error) {
-	resp, err := c.get("/teams/" + id)
-	return getTeamFromResponse(c, resp, err)
+	res, err := c.GetResource(TeamResourceType, id)
+	if err != nil {
+	    return nil, err
+	}
+	obj := res.(Team)
+	return &obj, nil
 }
 
 // UpdateTeam updates an existing team.

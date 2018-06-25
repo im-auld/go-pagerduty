@@ -24,6 +24,10 @@ func (a Ability) GetHTMLURL() string {
 	return ""
 }
 
+func (a Ability) String() string {
+	return string(a)
+}
+
 type AbilityResponse struct {
 	APIResponse
 }
@@ -67,7 +71,7 @@ func (list ListAbilityResponse) GetTotal() uint {
 
 // ListAbilities lists all abilities on your account.
 func (c *Client) ListAbilities() (*ListAbilityResponse, error) {
-	resp, err := c.get("/abilities")
+	resp, err := c.ListResources(AbilityResourceType)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +80,7 @@ func (c *Client) ListAbilities() (*ListAbilityResponse, error) {
 }
 
 // TestAbility Check if your account has the given ability.
-func (c *Client) TestAbility(ability string) error {
-	_, err := c.get("/abilities/" + ability)
+func (c *Client) TestAbility(ability Ability) error {
+	_, err := c.get("/abilities/" + ability.GetID())
 	return err
 }

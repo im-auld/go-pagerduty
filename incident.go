@@ -82,12 +82,8 @@ type ListIncidentsOptions struct {
 }
 
 // ListIncidents lists existing incidents.
-func (c *Client) ListIncidents(o ListIncidentsOptions) (*ListIncidentsResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/incidents?" + v.Encode())
+func (c *Client) ListIncidents(opts ...ResourceRequestOptionFunc) (*ListIncidentsResponse, error) {
+	resp, err := c.ListResources(IncidentResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,25 +97,18 @@ func (c *Client) ManageIncidents(from string, incidents []Incident) error {
 	headers := make(map[string]string)
 	headers["From"] = from
 	r["incidents"] = incidents
-	_, e := c.put("/incidents", r, &headers)
+	_, e := c.put("/incidents", r, WithHeader("From", from))
 	return e
 }
 
 // GetIncident shows detailed information about an incident.
-func (c *Client) GetIncident(id string) (*Incident, error) {
-	resp, err := c.get("/incidents/" + id)
+func (c *Client) GetIncident(id string, opts ...ResourceRequestOptionFunc) (*Incident, error) {
+	res, err := c.GetResource(IncidentResourceType, id, opts...)
 	if err != nil {
-		return nil, err
+	    return nil, err
 	}
-	var result map[string]Incident
-	if err := c.decodeJSON(resp, &result); err != nil {
-		return nil, err
-	}
-	i, ok := result["incident"]
-	if !ok {
-		return nil, fmt.Errorf("JSON response does not have incident field")
-	}
-	return &i, nil
+	obj := res.(Incident)
+	return &obj, nil
 }
 
 // IncidentNote is a note for the specified incident.

@@ -2,7 +2,6 @@ package pagerduty
 
 import (
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"net/http"
 )
 
@@ -76,12 +75,8 @@ type GetUserOptions struct {
 }
 
 // ListUsers lists users of your PagerDuty account, optionally filtered by a search query.
-func (c *Client) ListUsers(o ListUsersOptions) (*ListUsersResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/users?" + v.Encode())
+func (c *Client) ListUsers(opts ...ResourceRequestOptionFunc) (*ListUsersResponse, error) {
+	resp, err := c.ListResources(UserResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +99,13 @@ func (c *Client) DeleteUser(id string) error {
 }
 
 // GetUser gets details about an existing user.
-func (c *Client) GetUser(id string, o GetUserOptions) (*User, error) {
-	v, err := query.Values(o)
+func (c *Client) GetUser(id string, opts ...ResourceRequestOptionFunc) (*User, error) {
+	res, err := c.GetResource(UserResourceType, id, opts...)
 	if err != nil {
-		return nil, err
+	    return nil, err
 	}
-	resp, err := c.get("/users/" + id + "?" + v.Encode())
-	return getUserFromResponse(c, resp, err)
+	obj := res.(User)
+	return &obj, nil
 }
 
 // UpdateUser updates an existing user.

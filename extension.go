@@ -56,3 +56,12 @@ func ExtensionWithEndpoint(endpoint string) ExtensionOptFunc {
 		extension.EndpointUrl = endpoint
 	}
 }
+
+func (c *Client) GetExtension(id string, opts ...ResourceRequestOptionFunc) (*Extension, error) {
+	res, err := c.GetResource(ExtensionResourceType, id, opts...)
+	if err != nil {
+		return nil, err
+	}
+	obj := res.(Extension)
+	return &obj, nil
+}

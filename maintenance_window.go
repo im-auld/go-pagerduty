@@ -2,7 +2,6 @@ package pagerduty
 
 import (
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"net/http"
 )
 
@@ -49,12 +48,8 @@ type ListMaintenanceWindowsOptions struct {
 }
 
 // ListMaintenanceWindows lists existing maintenance windows, optionally filtered by service and/or team, or whether they are from the past, present or future.
-func (c *Client) ListMaintenanceWindows(o ListMaintenanceWindowsOptions) (*ListMaintenanceWindowsResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/maintenance_windows?" + v.Encode())
+func (c *Client) ListMaintenanceWindows(opts ...ResourceRequestOptionFunc) (*ListMaintenanceWindowsResponse, error) {
+	resp, err := c.ListResources(MaintenanceWindowResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,13 +77,13 @@ type GetMaintenanceWindowOptions struct {
 }
 
 // GetMaintenanceWindow gets an existing maintenance window.
-func (c *Client) GetMaintenanceWindow(id string, o GetMaintenanceWindowOptions) (*MaintenanceWindow, error) {
-	v, err := query.Values(o)
+func (c *Client) GetMaintenanceWindow(id string, opts ...ResourceRequestOptionFunc) (*MaintenanceWindow, error) {
+	res, err := c.GetResource(MaintenanceWindowResourceType, id, opts...)
 	if err != nil {
-		return nil, err
+	    return nil, err
 	}
-	resp, err := c.get("/maintenance_windows/" + id + "?" + v.Encode())
-	return getMaintenanceWindowFromResponse(c, resp, err)
+	obj := res.(MaintenanceWindow)
+	return &obj, nil
 }
 
 // UpdateMaintenanceWindow updates an existing maintenance window.

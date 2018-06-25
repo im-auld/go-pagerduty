@@ -1,7 +1,6 @@
 package pagerduty
 
 import (
-	"github.com/google/go-querystring/query"
 	"net/http"
 )
 
@@ -65,12 +64,8 @@ type ListNotificationsResponse struct {
 }
 
 // ListNotifications lists notifications for a given time range, optionally filtered by type (sms_notification, email_notification, phone_notification, or push_notification).
-func (c *Client) ListNotifications(o ListNotificationOptions) (*ListNotificationsResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/notifications?" + v.Encode())
+func (c *Client) ListNotifications(opts ...ResourceRequestOptionFunc) (*ListNotificationsResponse, error) {
+	resp, err := c.ListResources(NotificationResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}

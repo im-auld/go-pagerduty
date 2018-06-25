@@ -105,12 +105,8 @@ type ListServiceResponse struct {
 }
 
 // ListServices lists existing services.
-func (c *Client) ListServices(o ListServiceOptions) (*ListServiceResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/services?" + v.Encode())
+func (c *Client) ListServices(opts ...ResourceRequestOptionFunc) (*ListServiceResponse, error) {
+	resp, err := c.ListResources(ServiceResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +120,13 @@ type GetServiceOptions struct {
 }
 
 // GetService gets details about an existing service.
-func (c *Client) GetService(id string, o *GetServiceOptions) (*Service, error) {
-	v, err := query.Values(o)
-	resp, err := c.get("/services/" + id + "?" + v.Encode())
-	return getServiceFromResponse(c, resp, err)
+func (c *Client) GetService(id string, opts ...ResourceRequestOptionFunc) (*Service, error) {
+	res, err := c.GetResource(ServiceResourceType, id, opts...)
+	if err != nil {
+	    return nil, err
+	}
+	obj := res.(Service)
+	return &obj, nil
 }
 
 // CreateService creates a new service.

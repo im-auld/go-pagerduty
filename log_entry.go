@@ -1,9 +1,6 @@
 package pagerduty
 
 import (
-	"fmt"
-
-	"github.com/google/go-querystring/query"
 	"net/http"
 )
 
@@ -68,42 +65,11 @@ type ListLogEntriesOptions struct {
 }
 
 // ListLogEntries lists all of the incident log entries across the entire account.
-func (c *Client) ListLogEntries(o ListLogEntriesOptions) (*ListLogEntryResponse, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/log_entries?" + v.Encode())
+func (c *Client) ListLogEntries(opts ...ResourceRequestOptionFunc) (*ListLogEntryResponse, error) {
+	resp, err := c.ListResources(LogEntryResourceType, opts...)
 	if err != nil {
 		return nil, err
 	}
 	var result ListLogEntryResponse
 	return &result, c.decodeJSON(resp, &result)
-}
-
-// GetLogEntryOptions is the data structure used when calling the GetLogEntry API endpoint.
-type GetLogEntryOptions struct {
-	TimeZone string   `url:"timezone,omitempty"`
-	Includes []string `url:"include,omitempty,brackets"`
-}
-
-// GetLogEntry list log entries for the specified incident.
-func (c *Client) GetLogEntry(id string, o GetLogEntryOptions) (*LogEntry, error) {
-	v, err := query.Values(o)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.get("/log_entries/" + id + "?" + v.Encode())
-	if err != nil {
-		return nil, err
-	}
-	var result map[string]LogEntry
-	if err := c.decodeJSON(resp, &result); err != nil {
-		return nil, err
-	}
-	le, ok := result["log_entry"]
-	if !ok {
-		return nil, fmt.Errorf("JSON response does not have log_entry field")
-	}
-	return &le, nil
 }
