@@ -44,10 +44,12 @@ var vowels = map[rune]bool{
 //Exception: To form the plural of proper nouns ending in "y" preceded by a consonant, just add an "s".
 func (r APIResourceType) Plural() APIResourceType {
 	l := len(r)
-	penultimate, ultimate := r[l-2], r[l-1]
-	if ultimate == 'y' {
-		if _, ok := vowels[rune(penultimate)]; !ok {
-			return APIResourceType(r.String()[:l-1] + "ies")
+	if l >= 2 {
+		penultimate, ultimate := r[l-2], r[l-1]
+		if ultimate == 'y' {
+			if _, ok := vowels[rune(penultimate)]; !ok {
+				return APIResourceType(r.String()[:l-1] + "ies")
+			}
 		}
 	}
 	return APIResourceType(r.String() + "s")
