@@ -1,7 +1,6 @@
 package pagerduty
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -86,16 +85,17 @@ func (c *Client) ListUsers(opts ...ResourceRequestOptionFunc) (*ListUsersRespons
 
 // CreateUser creates a new user.
 func (c *Client) CreateUser(u User) (*User, error) {
-	data := make(map[string]User)
-	data["user"] = u
-	resp, err := c.post("/users", data)
-	return getUserFromResponse(c, resp, err)
+	resp, err := c.CreateResource(u)
+	if err != nil {
+		return nil, err
+	}
+	user := resp.(User)
+	return &user, nil
 }
 
 // DeleteUser deletes a user.
 func (c *Client) DeleteUser(id string) error {
-	_, err := c.delete("/users/" + id)
-	return err
+	return c.DeleteResource(UserResourceType, id)
 }
 
 // GetUser gets details about an existing user.
@@ -110,24 +110,10 @@ func (c *Client) GetUser(id string, opts ...ResourceRequestOptionFunc) (*User, e
 
 // UpdateUser updates an existing user.
 func (c *Client) UpdateUser(u User) (*User, error) {
-	v := make(map[string]User)
-	v["user"] = u
-	resp, err := c.put("/users/"+u.ID, v, nil)
-	return getUserFromResponse(c, resp, err)
-}
-
-func getUserFromResponse(c *Client, resp *http.Response, err error) (*User, error) {
+	resp, err := c.UpdateResource(u)
 	if err != nil {
 		return nil, err
 	}
-	var target map[string]User
-	if dErr := deserialize(resp, &target); dErr != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
-	}
-	rootNode := "user"
-	t, nodeOK := target[rootNode]
-	if !nodeOK {
-		return nil, fmt.Errorf("JSON response does not have %s field", rootNode)
-	}
-	return &t, nil
+	user := resp.(User)
+	return &user, nil
 }

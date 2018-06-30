@@ -1,7 +1,6 @@
 package pagerduty
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -59,16 +58,17 @@ func (c *Client) ListMaintenanceWindows(opts ...ResourceRequestOptionFunc) (*Lis
 
 // CreateMaintenanceWindows creates a new maintenance window for the specified services.
 func (c *Client) CreateMaintenanceWindows(m MaintenanceWindow) (*MaintenanceWindow, error) {
-	data := make(map[string]MaintenanceWindow)
-	data["maintenance_window"] = m
-	resp, err := c.post("/maintenance_windows", data)
-	return getMaintenanceWindowFromResponse(c, resp, err)
+	resp, err := c.CreateResource(m)
+	if err != nil {
+		return nil, err
+	}
+	mw := resp.(MaintenanceWindow)
+	return &mw, nil
 }
 
 // DeleteMaintenanceWindow deletes an existing maintenance window if it's in the future, or ends it if it's currently on-going.
 func (c *Client) DeleteMaintenanceWindow(id string) error {
-	_, err := c.delete("/maintenance_windows/" + id)
-	return err
+	return c.DeleteResource(MaintenanceWindowResourceType, id)
 }
 
 // GetMaintenanceWindowOptions is the data structure used when calling the GetMaintenanceWindow API endpoint.
@@ -88,22 +88,10 @@ func (c *Client) GetMaintenanceWindow(id string, opts ...ResourceRequestOptionFu
 
 // UpdateMaintenanceWindow updates an existing maintenance window.
 func (c *Client) UpdateMaintenanceWindow(m MaintenanceWindow) (*MaintenanceWindow, error) {
-	resp, err := c.put("/maintenance_windows/"+m.ID, m, nil)
-	return getMaintenanceWindowFromResponse(c, resp, err)
-}
-
-func getMaintenanceWindowFromResponse(c *Client, resp *http.Response, err error) (*MaintenanceWindow, error) {
+	resp, err := c.UpdateResource(m)
 	if err != nil {
 		return nil, err
 	}
-	var target map[string]MaintenanceWindow
-	if dErr := deserialize(resp, &target); dErr != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
-	}
-	rootNode := "maintenance_window"
-	t, nodeOK := target[rootNode]
-	if !nodeOK {
-		return nil, fmt.Errorf("JSON response does not have %s field", rootNode)
-	}
-	return &t, nil
+	mw := resp.(MaintenanceWindow)
+	return &mw, nil
 }

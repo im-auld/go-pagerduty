@@ -57,6 +57,19 @@ func ExtensionWithEndpoint(endpoint string) ExtensionOptFunc {
 	}
 }
 
+func ExtensionWithSchema(r ExtensionSchema) ExtensionOptFunc{
+	return func(extension *Extension) {
+		extension.ExtensionSchema = r
+	}
+}
+
+func ExtensionWithObjects(r ...APIObject) ExtensionOptFunc{
+	return func(extension *Extension) {
+		extension.ExtensionObjects = r
+	}
+}
+
+
 func (c *Client) GetExtension(id string, opts ...ResourceRequestOptionFunc) (*Extension, error) {
 	res, err := c.GetResource(ExtensionResourceType, id, opts...)
 	if err != nil {

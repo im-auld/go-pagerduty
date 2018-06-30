@@ -131,22 +131,27 @@ func (c *Client) GetService(id string, opts ...ResourceRequestOptionFunc) (*Serv
 
 // CreateService creates a new service.
 func (c *Client) CreateService(s Service) (*Service, error) {
-	data := make(map[string]Service)
-	data["service"] = s
-	resp, err := c.post("/services", data)
-	return getServiceFromResponse(c, resp, err)
+	resp, err := c.CreateResource(s)
+	if err != nil {
+		return nil, err
+	}
+	svc := resp.(Service)
+	return &svc, nil
 }
 
 // UpdateService updates an existing service.
 func (c *Client) UpdateService(s Service) (*Service, error) {
-	resp, err := c.put("/services/"+s.ID, s, nil)
-	return getServiceFromResponse(c, resp, err)
+	resp, err := c.UpdateResource(s)
+	if err != nil {
+		return nil, err
+	}
+	svc := resp.(Service)
+	return &svc, nil
 }
 
 // DeleteService deletes an existing service.
 func (c *Client) DeleteService(id string) error {
-	_, err := c.delete("/services/" + id)
-	return err
+	return c.DeleteResource(ServiceResourceType, id)
 }
 
 // CreateIntegration creates a new integration belonging to a service.
@@ -182,22 +187,6 @@ func (c *Client) UpdateIntegration(serviceID string, i Integration) (*Integratio
 func (c *Client) DeleteIntegration(serviceID string, integrationID string) error {
 	_, err := c.delete("/services/" + serviceID + "/integrations/" + integrationID)
 	return err
-}
-
-func getServiceFromResponse(c *Client, resp *http.Response, err error) (*Service, error) {
-	if err != nil {
-		return nil, err
-	}
-	var target map[string]Service
-	if dErr := deserialize(resp, &target); dErr != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
-	}
-	rootNode := "service"
-	t, nodeOK := target[rootNode]
-	if !nodeOK {
-		return nil, fmt.Errorf("JSON response does not have %s field", rootNode)
-	}
-	return &t, nil
 }
 
 func getIntegrationFromResponse(c *Client, resp *http.Response, err error) (*Integration, error) {

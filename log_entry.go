@@ -73,3 +73,12 @@ func (c *Client) ListLogEntries(opts ...ResourceRequestOptionFunc) (*ListLogEntr
 	var result ListLogEntryResponse
 	return &result, deserialize(resp, &result)
 }
+
+func (c *Client) GetLogEntry(id string) (*LogEntry, error) {
+	resp, err := c.GetResource(LogEntryResourceType, id)
+	if err != nil {
+		return nil, err
+	}
+	le := resp.(LogEntry)
+	return &le, nil
+}

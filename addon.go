@@ -1,7 +1,6 @@
 package pagerduty
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -63,27 +62,10 @@ func (c *Client) GetAddon(id string) (*Addon, error) {
 
 // InstallAddon installs an add-on for your account.
 func (c *Client) InstallAddon(a Addon) (*Addon, error) {
-	data := make(map[string]Addon)
-	data["addon"] = a
-	resp, err := c.post("/addons", data)
-	defer resp.Body.Close()
+	resp, err := c.CreateResource(a)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("failed to create. HTTP Status code: %d", resp.StatusCode)
-	}
-	return getAddonFromResponse(c, resp)
-}
-
-func getAddonFromResponse(c *Client, resp *http.Response) (*Addon, error) {
-	var result map[string]Addon
-	if err := deserialize(resp, &result); err != nil {
-		return nil, err
-	}
-	a, ok := result["addon"]
-	if !ok {
-		return nil, fmt.Errorf("JSON response does not have 'addon' field")
-	}
-	return &a, nil
+	addon := resp.(Addon)
+	return &addon, nil
 }

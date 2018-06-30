@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Acknowledgement is the data structure of an acknoledgement of an incident.
+// Acknowledgement is the data structure of an acknowledgement of an incident.
 type Acknowledgement struct {
 	At           string
 	Acknowledger APIObject
@@ -91,11 +91,10 @@ func (c *Client) ListIncidents(opts ...ResourceRequestOptionFunc) (*ListIncident
 	return &result, deserialize(resp, &result)
 }
 
+// TODO: Update for multiple resources
 // ManageIncidents acknowledges, resolves, escalates, or reassigns one or more incidents.
 func (c *Client) ManageIncidents(from string, incidents []Incident) error {
 	r := make(map[string][]Incident)
-	headers := make(map[string]string)
-	headers["From"] = from
 	r["incidents"] = incidents
 	_, e := c.put("/incidents", r, WithHeader("From", from))
 	return e

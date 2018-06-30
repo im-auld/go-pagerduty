@@ -92,13 +92,12 @@ func (c *Client) ListSchedules(opts ...ResourceRequestOptionFunc) (*ListSchedule
 
 // CreateSchedule creates a new on-call schedule.
 func (c *Client) CreateSchedule(s Schedule) (*Schedule, error) {
-	data := make(map[string]Schedule)
-	data["schedule"] = s
-	resp, err := c.post("/schedules", data)
+	resp, err := c.CreateResource(s)
 	if err != nil {
 		return nil, err
 	}
-	return getScheduleFromResponse(c, resp)
+	sc := resp.(Schedule)
+	return &sc, nil
 }
 
 // PreviewScheduleOptions is the data structure used when calling the PreviewSchedule API endpoint.
@@ -123,8 +122,7 @@ func (c *Client) PreviewSchedule(s Schedule, o PreviewScheduleOptions) error {
 
 // DeleteSchedule deletes an on-call schedule.
 func (c *Client) DeleteSchedule(id string) error {
-	_, err := c.delete("/schedules/" + id)
-	return err
+	return c.DeleteResource(ScheduleResourceType, id)
 }
 
 // GetScheduleOptions is the data structure used when calling the GetSchedule API endpoint.
@@ -152,13 +150,12 @@ type UpdateScheduleOptions struct {
 
 // UpdateSchedule updates an existing on-call schedule.
 func (c *Client) UpdateSchedule(id string, s Schedule) (*Schedule, error) {
-	v := make(map[string]Schedule)
-	v["schedule"] = s
-	resp, err := c.put("/schedules/"+id, v, nil)
+	resp, err := c.UpdateResource(s)
 	if err != nil {
 		return nil, err
 	}
-	return getScheduleFromResponse(c, resp)
+	sc := resp.(Schedule)
+	return &sc, nil
 }
 
 // ListOverridesOptions is the data structure used when calling the ListOverrides API endpoint.
@@ -178,6 +175,7 @@ type Override struct {
 	User  APIObject `json:"user,omitempty"`
 }
 
+// TODO: Figure out what the hell this is doing
 // ListOverrides lists overrides for a given time range.
 func (c *Client) ListOverrides(id string, o ListOverridesOptions) ([]Override, error) {
 	v, err := query.Values(o)
@@ -242,19 +240,6 @@ func (c *Client) ListOnCallUsers(id string, o ListOnCallUsersOptions) ([]User, e
 		return nil, fmt.Errorf("JSON response does not have users field")
 	}
 	return u, nil
-}
-
-func getScheduleFromResponse(c *Client, resp *http.Response) (*Schedule, error) {
-	var target map[string]Schedule
-	if dErr := deserialize(resp, &target); dErr != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
-	}
-	rootNode := "schedule"
-	t, nodeOK := target[rootNode]
-	if !nodeOK {
-		return nil, fmt.Errorf("JSON response does not have %s field", rootNode)
-	}
-	return &t, nil
 }
 
 func getOverrideFromResponse(c *Client, resp *http.Response) (*Override, error) {

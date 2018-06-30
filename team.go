@@ -1,7 +1,6 @@
 package pagerduty
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -50,14 +49,17 @@ func (c *Client) ListTeams(opts ...ResourceRequestOptionFunc) (*ListTeamResponse
 
 // CreateTeam creates a new team.
 func (c *Client) CreateTeam(t *Team) (*Team, error) {
-	resp, err := c.post("/teams", t)
-	return getTeamFromResponse(c, resp, err)
+	resp, err := c.CreateResource(t)
+	if err != nil {
+		return nil, err
+	}
+	team := resp.(Team)
+	return &team, nil
 }
 
 // DeleteTeam removes an existing team.
 func (c *Client) DeleteTeam(id string) error {
-	_, err := c.delete("/teams/" + id)
-	return err
+	return c.DeleteResource(TeamResourceType, id)
 }
 
 // GetTeam gets details about an existing team.
@@ -72,8 +74,12 @@ func (c *Client) GetTeam(id string) (*Team, error) {
 
 // UpdateTeam updates an existing team.
 func (c *Client) UpdateTeam(id string, t *Team) (*Team, error) {
-	resp, err := c.put("/teams/"+id, t, nil)
-	return getTeamFromResponse(c, resp, err)
+	resp, err := c.UpdateResource(t)
+	if err != nil {
+		return nil, err
+	}
+	team := resp.(Team)
+	return &team, nil
 }
 
 // RemoveEscalationPolicyFromTeam removes an escalation policy from a team.
@@ -98,20 +104,4 @@ func (c *Client) RemoveUserFromTeam(teamID, userID string) error {
 func (c *Client) AddUserToTeam(teamID, userID string) error {
 	_, err := c.put("/teams/"+teamID+"/users/"+userID, nil, nil)
 	return err
-}
-
-func getTeamFromResponse(c *Client, resp *http.Response, err error) (*Team, error) {
-	if err != nil {
-		return nil, err
-	}
-	var target map[string]Team
-	if dErr := deserialize(resp, &target); dErr != nil {
-		return nil, fmt.Errorf("Could not decode JSON response: %v", dErr)
-	}
-	rootNode := "team"
-	t, nodeOK := target[rootNode]
-	if !nodeOK {
-		return nil, fmt.Errorf("JSON response does not have %s field", rootNode)
-	}
-	return &t, nil
 }

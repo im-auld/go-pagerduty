@@ -82,15 +82,17 @@ func (c *Client) ListEscalationPolicies(opts ...ResourceRequestOptionFunc) (*Lis
 
 // CreateEscalationPolicy creates a new escalation policy.
 func (c *Client) CreateEscalationPolicy(e EscalationPolicy) (*EscalationPolicy, error) {
-	data := make(map[string]EscalationPolicy)
-	data["escalation_policy"] = e
-	resp, err := c.post(escPath, data)
-	return getEscalationPolicyFromResponse(c, resp, err)
+	resp, err := c.CreateResource(e)
+	if err != nil {
+		return nil, err
+	}
+	escPol := resp.(EscalationPolicy)
+	return &escPol, nil
 }
 
 // DeleteEscalationPolicy deletes an existing escalation policy and rules.
 func (c *Client) DeleteEscalationPolicy(id string) error {
-	_, err := c.delete(escPath + "/" + id)
+	err := c.DeleteResource(EscalationPolicyResourceType, id)
 	return err
 }
 
