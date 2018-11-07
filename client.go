@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 func newDefaultHTTPClient() *http.Client {
@@ -58,7 +59,7 @@ type Client struct {
 
 // DeleteResource deletes the given Resource. The given Resource should return a valid API URL from GetSelf()
 func (c *Client) DeleteResource(typ APIResourceType, id string) error {
-	path := fmt.Sprintf("/%s/%s",typ.Plural(), id)
+	path := fmt.Sprintf("/%s/%s", typ.Plural(), id)
 	res, err := c.delete(path)
 	if err != nil {
 		return err
@@ -231,12 +232,14 @@ func serialize(payload interface{}) (*bytes.Buffer, error) {
 }
 
 func deserialize(resp *http.Response, dest interface{}) error {
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(body, &dest); err != nil {
-		return fmt.Errorf("could not decode JSON response: %v", err)
+	if resp.Body != nil {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(body, &dest); err != nil {
+			return fmt.Errorf("could not decode JSON response: %v", err)
+		}
 	}
 	return nil
 }
