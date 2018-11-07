@@ -6,6 +6,14 @@ import (
 
 type ResourceRequestOptionFunc func(*http.Request) error
 
+func setQueryParam(key, value string, request *http.Request) error {
+	params := request.URL.Query()
+	params.Add(key, value)
+	qString := params.Encode()
+	request.URL.RawQuery = qString
+	return nil
+}
+
 func WithParams(p map[string]string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
 		params := request.URL.Query()
@@ -74,9 +82,7 @@ func WithOverflow(value string) ResourceRequestOptionFunc {
 
 func WithQuery(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("query", value)
-		return nil
+		return setQueryParam("query", value, request)
 	}
 }
 
