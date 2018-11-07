@@ -9,8 +9,7 @@ type ResourceRequestOptionFunc func(*http.Request) error
 func setQueryParam(key, value string, request *http.Request) error {
 	params := request.URL.Query()
 	params.Add(key, value)
-	qString := params.Encode()
-	request.URL.RawQuery = qString
+	request.URL.RawQuery = params.Encode()
 	return nil
 }
 
@@ -20,63 +19,50 @@ func WithParams(p map[string]string) ResourceRequestOptionFunc {
 		for key, value := range p {
 			params.Add(key, value)
 		}
+		request.URL.RawQuery = params.Encode()
 		return nil
 	}
 }
 
 func WithDateRange(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("date_range", value)
-		return nil
+		return setQueryParam("date_range", value, request)
 	}
 }
 
 func WithEditable(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("editable", value)
-		return nil
+		return setQueryParam("editable", value, request)
 	}
 }
 
 func WithEscalationPolicyIDs(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("escalation_policy_ids", value)
-		return nil
+		return setQueryParam("escalation_policy_ids", value, request)
 	}
 }
 
 func WithFilter(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("filter", value)
-		return nil
+		return setQueryParam("filter", value, request)
 	}
 }
 
 func WithIncludes(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("includes", value)
-		return nil
+		return setQueryParam("includes", value, request)
 	}
 }
 
 func WithIsOverview(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("is_overview", value)
-		return nil
+		return setQueryParam("is_overview", value, request)
 	}
 }
 
 func WithOverflow(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("overflow", value)
-		return nil
+		return setQueryParam("overflow", value, request)
 	}
 }
 
@@ -88,65 +74,49 @@ func WithQuery(value string) ResourceRequestOptionFunc {
 
 func WithServiceIDs(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("service_ids", value)
-		return nil
+		return setQueryParam("service_ids", value, request)
 	}
 }
 
 func WithSince(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("since", value)
-		return nil
+		return setQueryParam("since", value, request)
 	}
 }
 
 func WithSortBy(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("sort_by", value)
-		return nil
+		return setQueryParam("sort_by", value, request)
 	}
 }
 
 func WithStatuses(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("statuses", value)
-		return nil
+		return setQueryParam("statuses", value, request)
 	}
 }
 
 func WithTeamIDs(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("team_ids", value)
-		return nil
+		return setQueryParam("team_ids", value, request)
 	}
 }
 
 func WithTimeZone(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("time_zone", value)
-		return nil
+		return setQueryParam("time_zone", value, request)
 	}
 }
 
 func WithUntil(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("until", value)
-		return nil
+		return setQueryParam("until", value, request)
 	}
 }
 
 func WithUserIDs(value string) ResourceRequestOptionFunc {
 	return func(request *http.Request) error {
-		params := request.URL.Query()
-		params.Add("user_ids", value)
-		return nil
+		return setQueryParam("user_ids", value, request)
 	}
 }
 
