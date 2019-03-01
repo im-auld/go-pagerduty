@@ -3,8 +3,9 @@ package pagerduty
 import (
 	"fmt"
 
-	"github.com/google/go-querystring/query"
 	"net/http"
+
+	"github.com/google/go-querystring/query"
 )
 
 // Acknowledgement is the data structure of an acknowledgement of an incident.
@@ -64,6 +65,14 @@ type ListIncidentsResponse struct {
 	Incidents []Incident `json:"incidents,omitempty"`
 }
 
+type ListIncidentAlertsResponse struct {
+	Alerts []Alert `json:"alerts"`
+	Limit  int     `json:"limit"`
+	Offset int     `json:"offset"`
+	More   bool    `json:"more"`
+	Total  *int     `json:"total"`
+}
+
 // ListIncidentsOptions is the structure used when passing parameters to the ListIncident API endpoint.
 type ListIncidentsOptions struct {
 	APIListObject
@@ -104,7 +113,7 @@ func (c *Client) ManageIncidents(from string, incidents []Incident) error {
 func (c *Client) GetIncident(id string, opts ...ResourceRequestOptionFunc) (*Incident, error) {
 	res, err := c.GetResource(IncidentResourceType, id, opts...)
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 	obj := res.(Incident)
 	return &obj, nil
@@ -177,4 +186,16 @@ func (c *Client) ListIncidentLogEntries(id string, o ListIncidentLogEntriesOptio
 	}
 	var result ListIncidentLogEntriesResponse
 	return &result, deserialize(resp, &result)
+}
+
+func (c *Client) ListAlertsForIncident(id string, opts ...ResourceRequestOptionFunc) (*ListIncidentAlertsResponse, error) {
+	resp, err := c.get("/incidents/" + id + "/alerts")
+	if err != nil {
+		return nil, err
+	}
+	var result *ListIncidentAlertsResponse
+	if err := deserialize(resp, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
